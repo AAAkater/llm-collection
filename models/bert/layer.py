@@ -23,16 +23,19 @@ class BertLayer(nn.Module):
             PositionWiseFeedForward(d_model, d_ff),
             nn.Dropout(dropout_rate),
         )
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
+        self.layer_norm1 = nn.LayerNorm(d_model)
+        self.layer_norm2 = nn.LayerNorm(d_model)
 
-    def forward(self, enc: Tensor, mask: Tensor | None = None):
+    def forward(self, enc_input: Tensor, mask: Tensor | None = None):
         # Self attention
-        attention_output: Tensor = self.attention(enc, enc, enc, mask)
-        attention_output = self.norm1(enc + attention_output)  # Add & Norm
+        attention_output: Tensor = self.attention(
+            enc_input, enc_input, enc_input, mask
+        )
+        # Add & Norm
+        attention_output = self.layer_norm1(enc_input + attention_output)
 
         # Feed Forward Network
         ffn_output: Tensor = self.ffn(attention_output)
-        layer_output: Tensor = self.norm2(attention_output + ffn_output)
+        layer_output: Tensor = self.layer_norm2(attention_output + ffn_output)
 
         return layer_output
