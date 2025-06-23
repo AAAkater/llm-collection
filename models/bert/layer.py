@@ -1,7 +1,7 @@
 from torch import Tensor, nn
 
-from models.transformer.layers.my_multi_head_attention import MultiHeadAttention
-from models.transformer.layers.my_position_wise_feed_forward import (
+from models.transformer.attentions import MultiHeadAttention
+from models.transformer.feed_forward import (
     PositionWiseFeedForward,
 )
 
