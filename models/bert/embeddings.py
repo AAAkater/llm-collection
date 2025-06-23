@@ -8,6 +8,7 @@ class BertEmbeddings(nn.Module):
     def __init__(
         self,
         vocab_size: int,
+        segment_vocab_size: int,
         d_model: int,
         max_seq_len: int,
         dropout_rate: float = 0.1,
@@ -22,15 +23,21 @@ class BertEmbeddings(nn.Module):
             embedding_dim=d_model,
         )
         self.segment_embedding = nn.Embedding(
-            num_embeddings=2,  # 1 or 0
+            num_embeddings=segment_vocab_size,
             embedding_dim=d_model,
         )
-        self.layer_norm = nn.LayerNorm(d_model)
-        self.dropout = nn.Dropout(p=dropout_rate)
+
+        self.layer_norm = nn.Sequential(
+            nn.LayerNorm(d_model),
+            nn.Dropout(p=dropout_rate),
+        )
 
     def forward(
         self, input_ids: Tensor, segment_ids: Tensor | None = None
     ) -> Tensor:
+        if segment_ids is None:
+            segment_ids = torch.zeros_like(input_ids)
+
         seq_len = input_ids.size(1)
         position_ids = (
             torch.arange(seq_len, dtype=torch.long)
@@ -38,12 +45,10 @@ class BertEmbeddings(nn.Module):
             .expand_as(input_ids)
             .to(device=settings.device)
         )
-        if segment_ids is None:
-            segment_ids = torch.zeros_like(input_ids)
+
         token_embeds: Tensor = self.token_embedding(input_ids)
         position_embeds: Tensor = self.position_embedding(position_ids)
         segment_embeds: Tensor = self.segment_embedding(segment_ids)
         embeddings: Tensor = token_embeds + position_embeds + segment_embeds
         embeddings = self.layer_norm(embeddings)
-        embeddings = self.dropout(embeddings)
         return embeddings
