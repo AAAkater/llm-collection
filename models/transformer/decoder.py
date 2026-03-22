@@ -100,7 +100,6 @@ class Decoder(nn.Module):
                 for _ in range(n_layers)
             ]
         )
-        self.linear = nn.Linear(d_model, dec_vocab_size)
 
     def forward(
         self,
@@ -112,5 +111,4 @@ class Decoder(nn.Module):
         tgt: Tensor = self.emb(dec_out)
         for layer in self.layers:
             tgt = layer(tgt, enc_out, tgt_mask, src_mask)
-        out_put: Tensor = self.linear(tgt)
-        return out_put
+        return tgt

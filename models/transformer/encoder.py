@@ -26,12 +26,7 @@ class EncoderLayer(nn.Module):
         mask: Tensor,
     ):
         residual = enc.clone()
-        enc = self.attn(
-            enc,
-            enc,
-            enc,
-            mask,
-        )
+        enc = self.attn(enc, enc, enc, mask)
         # 残差连接
         enc += residual
         enc = self.norm1(enc)
@@ -74,7 +69,7 @@ class Encoder(nn.Module):
 
     def __init__(
         self,
-        enc_voc_size: int,
+        encoder_vocab_size: int,
         max_seq_len: int,
         d_model: int,
         d_ff: int,
@@ -85,7 +80,7 @@ class Encoder(nn.Module):
         self.emb = TransformerEmbedding(
             d_model=d_model,
             max_seq_len=max_seq_len,
-            vocab_size=enc_voc_size,
+            vocab_size=encoder_vocab_size,
         )
 
         self.layers = nn.ModuleList(

@@ -25,7 +25,7 @@ class Transformer(nn.Module):
         self.tgt_pad_idx = tgt_pad_idx
         self.tgt_sos_idx = tgt_sos_idx
         self.encoder = Encoder(
-            enc_voc_size=src_vocab_size,
+            encoder_vocab_size=src_vocab_size,
             d_model=d_model,
             n_head=n_head,
             n_layers=n_layer,
@@ -40,6 +40,7 @@ class Transformer(nn.Module):
             d_ff=d_ff,
             n_layers=n_layer,
         )
+        self.linear = nn.Linear(d_model, tgt_vocab_size)
 
     def forward(
         self,
@@ -52,7 +53,7 @@ class Transformer(nn.Module):
         enc_src: Tensor = self.encoder(src, src_mask)
         output: Tensor = self.decoder(tgt, enc_src, tgt_mask, src_mask)
 
-        return output
+        return self.linear(output)
 
     def make_src_mask(self, src: Tensor) -> Tensor:
         """
